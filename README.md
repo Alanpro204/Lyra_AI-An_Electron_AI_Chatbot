@@ -2,6 +2,8 @@
 
 A NodeJS application built with Electron, leveraging the APIs of OpenAI, Google Gemini, and Meta Llama 3.2 from the Groq platform.
 
+<iframe width="892" height="502" src="https://www.youtube.com/embed/wuvtfPWlep4" title="AI Electron Application" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## Easy Way to Chat with AI
 
 The chatbot interface will toggle its visibility when the user presses the hotkey `Alt + Spacebar` (Yes, we were inspired by the ChatGPT Desktop application 😅).
