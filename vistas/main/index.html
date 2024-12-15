@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/mathjax/tex-mml-chtml.js"></script>
+  <script src="js/showdown/dist/showdown.min.js"></script>
+  <link rel="stylesheet" href="css/prism.css">
+</head>
+
+<body data-prismjs-copy-timeout="500">
+  <div class="chats-container">
+    <details class="chats-subcontainer">
+      <summary>
+        <h3 class="chats-header">Chats</h3>
+        <button class="create-chat" onclick="newChat()">New Chat</button>
+      </summary>
+      <div class="chats-history">
+
+      </div>
+    </details>
+  </div>
+  <div class="chat-container">
+    <div class="header">
+      <div class="modelos">
+        <select onchange="updateConfig()" name="" id="">
+        </select>
+      </div>
+    </div>
+
+
+    <div class="chat-box" id="chatBox">
+      <!-- Messages will appear here -->
+    </div>
+    <div class="images_container" hidden>
+    </div>
+    <div class="input-container">
+      <input type="file" id="selectorArchivo" multiple accept="image/*" hidden />
+      <div class="left-buttons">
+        <button class="FileButton" id="FileButton" onclick="sendMessage()"><img src="imgs/add-photo-96.png" width="25"
+            alt=""></button>
+        <button class="ScreenshotButton" id="ScreenshotButton" onclick="sendMessage()"><img src="imgs/screenshot-90.png"
+            width="25" alt=""></button>
+      </div>
+      <textarea id="messageInput" rows="1" placeholder="Escribe un mensaje..."></textarea>
+      <button class="sendButton" onclick="sendMessage()">Enviar</button>
+      <button class="stopButton" onclick="stopGeneration()" hidden>Stop</button>
+    </div>
+  </div>
+  <script src="js/index.js"></script>
+  <script src="js/prism.js"></script>
+</body>
+
+</html>
