@@ -2,7 +2,7 @@
 
 A NodeJS application built with Electron, leveraging the APIs of OpenAI, Google Gemini, and Meta Llama 3.2 from the Groq platform.
 
-[<img src="Youtube_logo.png" height="12"> Sample video of the Assistant](https://youtu.be/wuvtfPWlep4)
+[<img src="Youtube_logo.png" height="12"> Sample video of the AI Application](https://youtu.be/wuvtfPWlep4)
 
 ## Easy Way to Chat with AI
 
