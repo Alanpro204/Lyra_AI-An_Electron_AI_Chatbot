@@ -21,4 +21,5 @@ This application also let you to choose the AI model that you want to use, for e
 This application is made to process images as well as text, using the multimodal capabilities of these models.
 
 ![alt text](image-2.png)
+
 (It let you to pick an image or take a screenshot of what you're watching)
