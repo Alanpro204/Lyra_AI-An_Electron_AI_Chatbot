@@ -23,6 +23,46 @@ var images_container = document.querySelector(".images_container");
 var images = [];
 //messageInput.focus();
 
+function setApiKeys() {
+    var openaiKEYObject = document.querySelector(".openai-key");
+    var groqKEYObject = document.querySelector(".groq-key");
+    var geminiKEYObject = document.querySelector(".gemini-key");
+    var proxyAddressObject = document.querySelector(".proxy-address");
+    var out = {
+        OPENAI_API_KEY: openaiKEYObject.value,
+        API_KEY_GROQ: groqKEYObject.value,
+        GOOGLE_API_KEY: geminiKEYObject.value,
+        PROXY: proxyAddressObject.value
+    }
+    fetch("http://127.0.0.1:7070/set-keys", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(out),
+    });
+}
+
+
+
+async function getApiKeys() {
+    var pet = await fetch("http://127.0.0.1:7070/get-keys", { method: 'GET' });
+    var res = await pet.json();
+    if (res) {
+        var openaiKEYObject = document.querySelector(".openai-key");
+        var groqKEYObject = document.querySelector(".groq-key");
+        var geminiKEYObject = document.querySelector(".gemini-key");
+        var proxyAddressObject = document.querySelector(".proxy-address");
+
+        openaiKEYObject.value = res.OPENAI_API_KEY
+        groqKEYObject.value = res.API_KEY_GROQ
+        geminiKEYObject.value = res.GOOGLE_API_KEY
+        proxyAddressObject.value = res.PROXY
+    }
+}
+
+getApiKeys();
+
 botonSeleccionar.addEventListener('click', () => {
     selectorArchivo.click();
 });
@@ -35,20 +75,88 @@ botonScreenshot.addEventListener('click', () => {
         const reader = new FileReader();
         reader.onloadend = function () {
             const base64data = reader.result;
-            addImage(base64data);
-            const file = new File([xhr.response], 'imagen.png', { type: 'image/png' });
-            // Usar DataTransfer para agregar el archivo al input file
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            selectorArchivo.files = dataTransfer.files;
-
-            comprobarImagenes();
-            console.log(dataTransfer.files);
+            // Usamos una función para manejar el recorte de la imagen
+            handleImageCrop(base64data, xhr.response);
         };
         reader.readAsDataURL(xhr.response); // Leer como URL de datos
     };
     xhr.send();
 });
+
+
+function handleImageCrop(base64data, blobImage) {
+
+    // Crear un modal o contenedor para la imagen
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    document.body.appendChild(modal);
+
+
+    const imageElement = document.createElement('img');
+    imageElement.src = base64data;
+    modal.appendChild(imageElement);
+
+    const cropper = new Cropper(imageElement, {
+        aspectRatio: NaN, // Permite cualquier aspecto
+        viewMode: 1, //Permite mover el canvas dentro del contenedor
+        zoomable: true, // Permite zoom con la rueda del ratón
+        preview: null,
+        autoCrop: false,
+    });
+
+    // Crear botón para confirmar el recorte
+    const cropButton = document.createElement('button');
+    cropButton.classList.add("cropbutton");
+    cropButton.innerText = 'Recortar';
+    cropButton.style.position = 'absolute';
+    cropButton.style.top = '20px';
+    cropButton.style.right = '20px';
+    modal.appendChild(cropButton);
+
+    // Crear botón para cancelar el recorte
+    const cancelButton = document.createElement('button');
+    cancelButton.classList.add("cropbutton");
+    cancelButton.innerText = 'Cancelar';
+    cancelButton.style.position = 'absolute';
+    cancelButton.style.top = '20px';
+    cancelButton.style.left = '20px';
+    modal.appendChild(cancelButton);
+
+    cropButton.addEventListener('click', () => {
+
+        // Obtener los datos de la imagen recortada
+        const croppedCanvas = cropper.getCroppedCanvas();
+
+        croppedCanvas.toBlob((blob) => {
+            const croppedFile = new File([blob], 'cropped-imagen.jpg', { type: 'image/jpeg' });
+
+            // Usar DataTransfer para agregar el archivo al input file
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(croppedFile);
+            selectorArchivo.files = dataTransfer.files;
+
+            // Cerrar el modal después de recortar
+            modal.remove();
+            cropper.destroy();
+
+            comprobarImagenes();
+            console.log(dataTransfer.files);
+        }, 'image/jpeg', 0.8);
+    });
+
+    cancelButton.addEventListener('click', () => {
+        modal.remove();
+        cropper.destroy();
+    });
+}
 
 function comprobarImagenes() {
     const archivos = selectorArchivo.files;
@@ -396,7 +504,11 @@ async function askAI(text) {
                         msg += chunk;
 
                         var converter = new showdown.Converter();
-                        var html = converter.makeHtml(escapeBackslashes(msg) + "");
+                        if ((msg.split("```").length - 1) % 2 == 0) {
+                            var html = converter.makeHtml(escapeBackslashes(msg) + "");
+                        } else {
+                            var html = converter.makeHtml(escapeBackslashes(msg) + "\n```");
+                        }
 
                         responseElement.innerHTML = html; // Agregar contenido a la respuesta
 

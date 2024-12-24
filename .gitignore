@@ -3,3 +3,5 @@
 /configs.js
 /screenshot.png
 /compressed-image.jpg
+out/
+App-win32-x64

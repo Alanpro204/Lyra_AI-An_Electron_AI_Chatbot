@@ -9,6 +9,9 @@
   <script src="js/mathjax/tex-mml-chtml.js"></script>
   <script src="js/showdown/dist/showdown.min.js"></script>
   <link rel="stylesheet" href="css/prism.css">
+  
+  <link rel="stylesheet" href="cropper/cropper.min.css">
+  <script src="cropper/cropper.min.js"></script>
 </head>
 
 <body data-prismjs-copy-timeout="500">
@@ -49,6 +52,36 @@
       <button class="sendButton" onclick="sendMessage()">Enviar</button>
       <button class="stopButton" onclick="stopGeneration()" hidden>Stop</button>
     </div>
+  </div>
+  <div class="menu">
+    <img onclick="document.querySelector('.info').hidden = !document.querySelector('.info').hidden" class="menu-ic" src="imgs/nav_icons_settings.targetsize-48.png" alt="">
+  </div>
+  <div class="info" hidden>
+    <div class="text-header">API KEY SETUP</div>
+    <div class="keys-form">
+      <span class="input-span">OpenAI API Key</span>
+      <input class="input-form openai-key" type="text">
+      <a class="input-href" href="">Get one (payd)</a>
+      <span class="input-span">Groq API Key</span>
+      <input class="input-form groq-key" type="text">
+      <a class="input-href" href="">Get one (completely free)</a>
+      <span class="input-span">Gemini API Key</span>
+      <input class="input-form gemini-key" type="text">
+      <a class="input-href" href="">Get one (completely free)</a>
+      <span class="input-span">Proxy Address</span>
+      <input class="input-form proxy-address" type="text">
+      <button onclick="setApiKeys()" class="input-form-btn">Guardar</button>
+    </div>
+    <div class="text-header">HOTKEYS</div>
+    <span class="info-text">
+      <u>Alt + Space</u> &rArr; Show/ Hide window
+    </span>
+    <span class="info-text">
+      <u>Ctrl + Shift + N</u> &rArr; New Chat
+    </span>
+    <span class="info-text">
+      <u>Ctrl + Shift + D</u> &rArr; Delete current Chat
+    </span>
   </div>
   <script src="js/index.js"></script>
   <script src="js/prism.js"></script>

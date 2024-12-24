@@ -372,3 +372,72 @@ span.chat-uuid {
 .fade-in {
     animation: fadeIn 400ms linear;
 }
+.cropbutton{
+    border: solid var(--border_color) 2px;
+    color: var(--text_color);
+    background-color: rgba(0, 0, 0, 0.76);
+    padding: 10px;
+    border-radius: 10px;
+}
+.menu{
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    width: fit-content;
+}
+.menu-ic{
+    width: 35px;
+    margin-right: 5px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.info{
+    position: absolute;
+    bottom: 50px;
+    background-color: #00000052;
+    border: solid 1px var(--border_color);
+    left: 5px;
+    border-radius: 5px;
+}
+.info-text{
+    padding: 5px;
+    color: var(--text_color);
+    display: block;
+}
+.keys-form{
+    padding: 5px;
+}
+.input-span{
+    color: var(--text_color);
+}
+.input-form{
+    display: block;
+    border: none;
+    width: 250px;
+    margin-bottom: 5px;
+    padding: 3px;
+}
+.input-form:focus {
+    outline: none;
+}
+.input-form-btn{
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    background-color: white;
+}
+.text-header{
+    font-weight: bold;
+    color: var(--text_color);
+    margin-left: 5px;
+    margin-top: 7px;
+    text-decoration: underline;
+}
+.input-href{
+    display: block;
+    color: var(--text_color);
+    font-size: 12px;
+    margin-top: -5px;
+    margin-bottom: 5px;
+}

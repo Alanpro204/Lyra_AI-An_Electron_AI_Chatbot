@@ -5,7 +5,6 @@ import bodyParser from 'body-parser';
 import { OpenAI } from 'openai';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import fetch from 'node-fetch';
-import variables from './configs.js';
 import Store from 'electron-store';
 import os from 'os';
 import screenshot from 'screenshot-desktop';
@@ -14,6 +13,34 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/ge
 
 const __dirname = path.resolve();
 
+const store = new Store();
+
+if (!store.has("variables")) {
+  store.set("variables", {
+    API_KEY_GROQ: "",
+    OPENAI_API_KEY: "",
+    PROXY: "",
+    GOOGLE_API_KEY: ""
+  })
+}
+var variables = {};
+var proxyAgent = null;
+
+function getVariables() {
+  variables = store.get("variables")
+  setProxy();
+}
+getVariables()
+
+function setVariables(openAiKey, groqKey, geminiKey, proxyAddress) {
+  store.set("variables", {
+    API_KEY_GROQ: groqKey,
+    OPENAI_API_KEY: openAiKey,
+    PROXY: proxyAddress,
+    GOOGLE_API_KEY: geminiKey
+  })
+  getVariables()
+}
 
 // Configura la aplicación Express
 const express_app = express();
@@ -21,29 +48,36 @@ express_app.use(bodyParser.json({ limit: '100mb' })); // Puedes ajustar el tama�
 express_app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 
 
-const store = new Store();
 express_app.use(bodyParser.json());
 
-const proxyUrl = variables.PROXY; // Reemplaza con la URL de tu proxy
-const proxyAgent = new HttpsProxyAgent(proxyUrl);
+function setProxy() {
+  if (variables.PROXY != "") {
+    proxyAgent = new HttpsProxyAgent(variables.PROXY);
+  }else{
+    proxyAgent = null;
+  }
+  console.log(variables.PROXY != "")
+}
+
 var mainWindow;
 //console.log(proxyUrl);
+
+express_app.get('/get-keys', async (req, res) => {
+  res.json(variables)
+});
+
+express_app.post('/set-keys', async (req, res) => {
+  const body = req.body;
+  setVariables(body.OPENAI_API_KEY, body.API_KEY_GROQ, body.GOOGLE_API_KEY, body.PROXY);
+  res.json({ status: "done" })
+});
 
 express_app.get('/screenshot', async (req, res) => {
   mainWindow.hide();
   screenshot({ filename: 'screenshot.png' })
     .then((imgPath) => {
-      const outputImagePath = path.join(__dirname, 'compressed-image.jpg');
-      sharp(imgPath).jpeg({
-        quality: 90,
-        progressive: true,
-        mozjpeg: true
-      }).toFile(outputImagePath).then(() => {
-        mainWindow.show();
-        res.sendFile(outputImagePath);
-      }).catch((err) => {
-        console.error('Error al comprimir la imagen:', error);
-      })
+      mainWindow.show();
+      res.sendFile(imgPath);
     })
     .catch((err) => {
       mainWindow.show();
@@ -115,52 +149,83 @@ express_app.post('/sendMessage', async (req, res) => {
   if (source == "google") {
     var google;
     do {
-      google = new OpenAI({
-        apiKey: variables.GOOGLE_API_KEY, // Asegúrate de configurar tu API key en las variables de entorno
-        baseURL: "https://generativelanguage.googleapis.com/v1beta/",
-        fetch: (url, options) => fetch(url, { ...options, agent: proxyAgent, timeout: 5000 }),
-      });
-
+      if (proxyAgent != null) {
+        google = new OpenAI({
+          apiKey: variables.GOOGLE_API_KEY, // Asegúrate de configurar tu API key en las variables de entorno
+          baseURL: "https://generativelanguage.googleapis.com/v1beta/",
+          fetch: (url, options) => fetch(url, { ...options, agent: proxyAgent, timeout: 5000 }),
+        });
+      } else {
+        google = new OpenAI({
+          apiKey: variables.GOOGLE_API_KEY, // Asegúrate de configurar tu API key en las variables de entorno
+          baseURL: "https://generativelanguage.googleapis.com/v1beta/"
+        });
+      }
     } while (google.chat == undefined);
     api = google;
   }
   if (source == "openai") {
     var openai;
     do {
-      openai = new OpenAI({
-        apiKey: variables.OPENAI_API_KEY, // Asegúrate de configurar tu API key en las variables de entorno
-        baseURL: "https://api.openai.com/v1",
-        fetch: (url, options) => fetch(url, { ...options, agent: proxyAgent, timeout: 5000 }),
-      });
-
+      if (proxyAgent != null) {
+        openai = new OpenAI({
+          apiKey: variables.OPENAI_API_KEY, // Asegúrate de configurar tu API key en las variables de entorno
+          baseURL: "https://api.openai.com/v1",
+          fetch: (url, options) => fetch(url, { ...options, agent: proxyAgent, timeout: 5000 }),
+        });
+      } else {
+        openai = new OpenAI({
+          apiKey: variables.OPENAI_API_KEY, // Asegúrate de configurar tu API key en las variables de entorno
+          baseURL: "https://api.openai.com/v1"
+        });
+      }
     } while (openai.chat == undefined);
     api = openai;
   }
   if (source == "groq") {
     var groq;
     do {
-      groq = new OpenAI({
-        apiKey: variables.API_KEY_GROQ, // Asegúrate de configurar tu API key en las variables de entorno
-        baseURL: "https://api.groq.com/openai/v1",
-        fetch: (url, options) => fetch(url, { ...options, agent: proxyAgent, timeout: 5000 }),
-      });
+      if (proxyAgent != null) {
+        console.log("con proxy")
+        groq = new OpenAI({
+          apiKey: variables.API_KEY_GROQ, // Asegúrate de configurar tu API key en las variables de entorno
+          baseURL: "https://api.groq.com/openai/v1",
+          fetch: (url, options) => fetch(url, { ...options, agent: proxyAgent, timeout: 5000 }),
+        });
+      }else{
+        console.log("sin proxy")
+        groq = new OpenAI({
+          apiKey: variables.API_KEY_GROQ, // Asegúrate de configurar tu API key en las variables de entorno
+          baseURL: "https://api.groq.com/openai/v1"
+        });
+      }
     } while (groq.chat == undefined)
     api = groq;
   }
 
   try {
     var msgs = [];
-    msgs.push(
-      {
-        role: "system",
-        content: [
-          {
-            type: "text",
-            text: "cuando respondas una formula matematica, tienes que devolverla en formato LaTex y rodeada de $$, por ejemplo: para \"X*3\", tiene que ser: \"$$ X*3 $$\""
-          }
-        ]
-      }
-    )
+    if (source == "groq") {
+      msgs.push(
+        {
+          role: "system",
+          content: "cuando respondas una formula matematica, tienes que devolverla en formato LaTex y rodeada de $$, por ejemplo: para \"X*3\", tiene que ser: \"$$ X*3 $$\""
+        }
+      )
+    } else {
+      msgs.push(
+        {
+          role: "system",
+          content: [
+            {
+              type: "text",
+              text: "cuando respondas una formula matematica, tienes que devolverla en formato LaTex y rodeada de $$, por ejemplo: para \"X*3\", tiene que ser: \"$$ X*3 $$\""
+            }
+          ]
+        }
+      )
+    }
+
     for (var i = 0; i < messages.length; i++) {
       var msg = {
         role: messages[i].role,
@@ -248,7 +313,7 @@ const createWindow = () => {
     }
   });
 
-  var tray = new Tray('vistas/main/imgs/icon.png'); // Asegúrate de tener un ícono en tu proyecto
+  var tray = new Tray('resources/app/vistas/main/imgs/icon.png'); // Asegúrate de tener un ícono en tu proyecto
   const contextMenu = Menu.buildFromTemplate([
     {
       label: 'Mostrar',
@@ -284,9 +349,9 @@ const createWindow = () => {
     }
   });
   // Open the DevTools.
-  mainWindow.hide();
+  /*mainWindow.hide();*/
 
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished
