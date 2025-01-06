@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, shell, webContents } from 'electron'
+import { app, BrowserWindow, Tray, Menu, globalShortcut, shell, webContents, Notification } from 'electron'
 import path from 'node:path'
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -8,8 +8,6 @@ import fetch from 'node-fetch';
 import Store from 'electron-store';
 import os from 'os';
 import screenshot from 'screenshot-desktop';
-import sharp from 'sharp';
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 const __dirname = path.resolve();
 
@@ -264,14 +262,20 @@ express_app.listen(7070, () => {
   console.log('Servidor en ejecución en http://localhost:7070');
 });
 
-async function awaitWithTimeout(promise, timeoutMs) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout exceeded')), timeoutMs)
-    )
-  ]);
+function showNotification(title, body) {
+  const notification = {
+    subtitle: "Lyra AI",
+    title: title,
+    body: body,
+    icon: 'resources/app/vistas/main/imgs/icon.png',
+    sound: 'resources/app/vistas/main/new-notification-7-210334.mp3'
+  };
+
+  new Notification(notification).show();
 }
+
+
+
 Menu.setApplicationMenu(null);
 const createWindow = () => {
   // Create the browser window.
@@ -301,11 +305,6 @@ const createWindow = () => {
     // open url in a browser and prevent default
   });
 
-  /*mainWindow.on('minimize', (event) => {
-    event.preventDefault();
-    mainWindow.hide(); // Oculta la ventana al minimizarla
-  });*/
-
   mainWindow.on('close', (event) => {
     if (!app.isQuiting) {
       event.preventDefault();
@@ -328,7 +327,7 @@ const createWindow = () => {
     }
   ]);
 
-  tray.setToolTip('Mi aplicación');
+  tray.setToolTip('Lyra AI');
   tray.setContextMenu(contextMenu);
 
   tray.on('click', () => {
@@ -349,7 +348,8 @@ const createWindow = () => {
     }
   });
   // Open the DevTools.
-  /*mainWindow.hide();*/
+  mainWindow.hide();
+  showNotification("Lyra AI is running", "Lyra is running minimized:\nAlt + Space to show")
 
   //mainWindow.webContents.openDevTools()
 }

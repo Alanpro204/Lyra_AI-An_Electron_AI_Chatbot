@@ -51,6 +51,17 @@ body {
     background-color: #20232a00;
 }
 
+.delete_all{
+    width: fit-content;
+    padding: 5px;
+    font-size: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 70px;
+    color: var(--text_color);
+    border: solid 2px var(--border_color);
+}
+
 .chat-box {
     flex: 1;
     overflow-y: auto;

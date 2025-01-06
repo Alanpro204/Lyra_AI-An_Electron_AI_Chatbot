@@ -5,7 +5,11 @@ var models = [
     { "model": "gpt-4o-mini", "source": "openai" },
     { "model": "gpt-4o", "source": "openai" },
     { "model": "llama-3.2-90b-vision-preview", "source": "groq" },
-    { "model": "gemini-2.0-flash-exp", "source": "google" }
+    { "model": "gemini-2.0-flash-exp", "source": "google" },
+    { "model": "gemini-2.0-flash-thinking-exp-1219", "source": "google" },
+    { "model": "gemini-1.5-pro", "source": "google" },
+    { "model": "gemini-1.5-flash", "source": "google" },
+    { "model": "gemini-1.5-flash-8b", "source": "google" }
 ]
 var model = {};
 const chatBox = document.getElementById('chatBox');
@@ -21,7 +25,7 @@ var selectorArchivo = document.getElementById('selectorArchivo');
 
 var images_container = document.querySelector(".images_container");
 var images = [];
-//messageInput.focus();
+messageInput.focus();
 
 function setApiKeys() {
     var openaiKEYObject = document.querySelector(".openai-key");
@@ -64,6 +68,7 @@ async function getApiKeys() {
 getApiKeys();
 
 botonSeleccionar.addEventListener('click', () => {
+    selectorArchivo.value = '';
     selectorArchivo.click();
 });
 
@@ -169,6 +174,7 @@ function comprobarImagenes() {
             const base64 = reader.result;
             images.push(base64);
             images_container.hidden = false;
+            document.querySelector('.delete_all').hidden = false;
             var image = document.createElement("img");
             image.src = base64;
             images_container.appendChild(image);
@@ -256,15 +262,21 @@ function loadChat(chat_uuid) {
     }
 }
 
+function deleteFiles() {
+    selectorArchivo.files = undefined;
+    images = [];
+    images_container.hidden = true;
+    images_container.innerHTML = '';
+    document.querySelector('.delete_all').hidden = true;
+}
+
 function newChat() {
     var chat_box = document.querySelector(".chat-box");
     messages = [];
     chat_box.innerHTML = "";
     uuid = generateUUID();
-    images_container.innerHTML = "";
-    images = [];
-    images_container.hidden = true;
-    selectorArchivo.files = undefined;
+    deleteFiles()
+    messageInput.focus();
 }
 
 document.addEventListener('keydown', function (event) {
@@ -359,6 +371,7 @@ async function deleteChat(chat_uuid) {
         body: JSON.stringify({ uuid: chat_uuid }),
     });
     loadChats();
+    messageInput.focus();
     //const data = await response.json();
 }
 
@@ -595,10 +608,7 @@ function appendMessage(text, messageType = "", can_add, html, message_images = [
                 "content": contenido
             };
             console.log(images);
-            images_container.innerHTML = "";
-            images = [];
-            images_container.hidden = true;
-            selectorArchivo.files = undefined;
+            deleteFiles()
         } else {
             message = {
                 "role": role,

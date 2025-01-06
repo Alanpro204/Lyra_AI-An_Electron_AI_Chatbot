@@ -9,7 +9,7 @@
   <script src="js/mathjax/tex-mml-chtml.js"></script>
   <script src="js/showdown/dist/showdown.min.js"></script>
   <link rel="stylesheet" href="css/prism.css">
-  
+
   <link rel="stylesheet" href="cropper/cropper.min.css">
   <script src="cropper/cropper.min.js"></script>
 </head>
@@ -40,12 +40,13 @@
     </div>
     <div class="images_container" hidden>
     </div>
+    <div onclick="deleteFiles()" hidden class="delete_all">Remove all files</div>
     <div class="input-container">
       <input type="file" id="selectorArchivo" multiple accept="image/*" hidden />
       <div class="left-buttons">
-        <button class="FileButton" id="FileButton" onclick="sendMessage()"><img src="imgs/add-photo-96.png" width="25"
+        <button class="FileButton" type="button" id="FileButton"><img src="imgs/add-photo-96.png" width="25"
             alt=""></button>
-        <button class="ScreenshotButton" id="ScreenshotButton" onclick="sendMessage()"><img src="imgs/screenshot-90.png"
+        <button class="ScreenshotButton" type="button" id="ScreenshotButton"><img src="imgs/screenshot-90.png"
             width="25" alt=""></button>
       </div>
       <textarea id="messageInput" rows="1" placeholder="Escribe un mensaje..."></textarea>
@@ -54,7 +55,8 @@
     </div>
   </div>
   <div class="menu">
-    <img onclick="document.querySelector('.info').hidden = !document.querySelector('.info').hidden" class="menu-ic" src="imgs/nav_icons_settings.targetsize-48.png" alt="">
+    <img onclick="document.querySelector('.info').hidden = !document.querySelector('.info').hidden" class="menu-ic"
+      src="imgs/nav_icons_settings.targetsize-48.png" alt="">
   </div>
   <div class="info" hidden>
     <div class="text-header">API KEY SETUP</div>
