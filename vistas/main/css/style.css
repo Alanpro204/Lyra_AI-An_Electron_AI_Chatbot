@@ -51,6 +51,15 @@ body {
     background-color: #20232a00;
 }
 
+think{
+    font-size: 12px;
+    color: #ffffffc9;
+    background-color: rgba(0, 0, 0, 0.731);
+    padding: 1px 10px;
+    border-radius: 10px;
+    display: block;
+}
+
 .delete_all{
     width: fit-content;
     padding: 5px;

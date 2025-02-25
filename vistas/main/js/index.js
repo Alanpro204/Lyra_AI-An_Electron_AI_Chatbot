@@ -2,14 +2,17 @@
 var uuid = generateUUID();
 var messages = [];
 var models = [
-    { "model": "gpt-4o-mini", "source": "openai" },
     { "model": "gpt-4o", "source": "openai" },
-    { "model": "llama-3.2-90b-vision-preview", "source": "groq" },
-    { "model": "gemini-2.0-flash-exp", "source": "google" },
-    { "model": "gemini-2.0-flash-thinking-exp-1219", "source": "google" },
-    { "model": "gemini-1.5-pro", "source": "google" },
-    { "model": "gemini-1.5-flash", "source": "google" },
-    { "model": "gemini-1.5-flash-8b", "source": "google" }
+    { "model": "gpt-4o-mini", "source": "openai" },
+
+    { "model": "llama-3.3-70b-versatile", "source": "groq" },
+    { "model": "qwen-2.5-32b", "source": "groq" },
+    { "model": "deepseek-r1-distill-llama-70b", "source": "groq" },
+    { "model": "deepseek-r1-distill-qwen-32b", "source": "groq" },
+
+    { "model": "gemini-2.0-flash", "source": "google" },
+    { "model": "gemini-2.0-pro-exp-02-05", "source": "google" },
+    { "model": "gemini-2.0-flash-thinking-exp-01-21", "source": "google" },
 ]
 var model = {};
 const chatBox = document.getElementById('chatBox');
@@ -352,6 +355,7 @@ function addImage(b64) {
 
 
 async function updateConfig() {
+    setModel()
     await fetch('http://127.0.0.1:7070/updateConfig', {
         method: 'POST',
         headers: {
@@ -359,6 +363,12 @@ async function updateConfig() {
         },
         body: JSON.stringify(config),
     });
+    console.log(model)
+    if (model.source == "groq") {
+        document.querySelector(".left-buttons").style.display = "none"
+    } else {
+        document.querySelector(".left-buttons").style.display = "flex"
+    }
     //const data = await response.json();
 }
 
@@ -393,6 +403,13 @@ function loadConfig() {
         var res = JSON.parse(xhr.responseText);
         config.model = res.model;
         setModels();
+        model = models.filter(m => m.model == config.model)[0]
+        console.log(model)
+        if (model.source == "groq") {
+            document.querySelector(".left-buttons").style.display = "none"
+        } else {
+            document.querySelector(".left-buttons").style.display = "flex"
+        }
     };
     xhr.send();
 }
@@ -423,6 +440,7 @@ messageInput.addEventListener('keydown', function (event) {
         if (!event.shiftKey) {
             event.preventDefault();
             setModel();
+            updateConfig()
             sendMessage();
         }
     }
@@ -437,7 +455,8 @@ function setModel() {
             config.model = model.model;
         }
     });
-    updateConfig();
+
+    //updateConfig();
 }
 
 // Funcion de enviar un mensaje por el usuario
@@ -515,21 +534,37 @@ async function askAI(text) {
                         const chunk = decoder.decode(value, { stream: true });
 
                         msg += chunk;
-
                         var converter = new showdown.Converter();
-                        if ((msg.split("```").length - 1) % 2 == 0) {
-                            var html = converter.makeHtml(escapeBackslashes(msg) + "");
+
+                        if (msg.includes("<think>")) {
+
+                            if (msg.includes("</think>")) {
+                                var strings = msg.split("</think>")
+                                var thougths = strings[0].replace("<think>", "")
+                                var response = converter.makeHtml(strings[1])
+                                thougths = "<think><p onClick='this.parentNode.querySelector(\"div\").hidden = !this.parentNode.querySelector(\"div\").hidden' style='font-size:16px;padding:0;cursor:pointer'>«Pensamientos»</p><div hidden>" + converter.makeHtml(thougths) + "</div></think>"
+                            } else {
+                                var strings = [msg, ""]
+                                var thougths = strings[0].replace("<think>", "")
+                                var response = converter.makeHtml(strings[1])
+                                thougths = "<think><p onClick='this.parentNode.querySelector(\"div\").hidden = !this.parentNode.querySelector(\"div\").hidden' style='font-size:16px;padding:0;cursor:pointer'>«Pensamientos»</p><div>" + converter.makeHtml(thougths) + "</div></think>"
+                            }
+                            var html = thougths + response
                         } else {
-                            var html = converter.makeHtml(escapeBackslashes(msg) + "\n```");
+                            if ((msg.split("```").length - 1) % 2 == 0) {
+                                var html = converter.makeHtml(escapeBackslashes(msg) + "");
+                            } else {
+                                var html = converter.makeHtml(escapeBackslashes(msg) + "\n```");
+                            }
                         }
 
                         responseElement.innerHTML = html; // Agregar contenido a la respuesta
-
                         var as = responseElement.querySelectorAll("a");
                         as.forEach(function (a) {
                             a.target = "_blank";
                         });
                         actualizarMathJax();
+
                         var codes = responseElement.querySelectorAll("code");
                         for (var i = 0; i < codes.length; i++) {
                             if (responseElement.querySelectorAll("code")[i] == undefined) {
@@ -640,7 +675,7 @@ function appendMessage(text, messageType = "", can_add, html, message_images = [
             profile_image.src = "imgs/logos/openai.svg";
         }
         if (model.source == "groq") {
-            profile_image.src = "imgs/logos/meta-color.svg";
+            profile_image.src = "imgs/logos/groq.ico";
         }
         if (model.source == "google") {
             profile_image.src = "imgs/logos/gemini.png";
@@ -689,7 +724,7 @@ function appendMessage(text, messageType = "", can_add, html, message_images = [
     option_copy.addEventListener('click', function () {
         var cont = content.innerText;
         navigator.clipboard.writeText(cont).then(() => {
-            option_copy.innerText = "Copied";
+            option_copy.innerText = "✔ Copied";
             setTimeout(() => {
                 option_copy.innerText = "Copy";
             }, 5000);

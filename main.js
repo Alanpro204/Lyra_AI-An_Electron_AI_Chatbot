@@ -51,7 +51,7 @@ express_app.use(bodyParser.json());
 function setProxy() {
   if (variables.PROXY != "") {
     proxyAgent = new HttpsProxyAgent(variables.PROXY);
-  }else{
+  } else {
     proxyAgent = null;
   }
   console.log(variables.PROXY != "")
@@ -190,7 +190,7 @@ express_app.post('/sendMessage', async (req, res) => {
           baseURL: "https://api.groq.com/openai/v1",
           fetch: (url, options) => fetch(url, { ...options, agent: proxyAgent, timeout: 5000 }),
         });
-      }else{
+      } else {
         console.log("sin proxy")
         groq = new OpenAI({
           apiKey: variables.API_KEY_GROQ, // Asegúrate de configurar tu API key en las variables de entorno
@@ -203,26 +203,6 @@ express_app.post('/sendMessage', async (req, res) => {
 
   try {
     var msgs = [];
-    if (source == "groq") {
-      msgs.push(
-        {
-          role: "system",
-          content: "cuando respondas una formula matematica, tienes que devolverla en formato LaTex y rodeada de $$, por ejemplo: para \"X*3\", tiene que ser: \"$$ X*3 $$\""
-        }
-      )
-    } else {
-      msgs.push(
-        {
-          role: "system",
-          content: [
-            {
-              type: "text",
-              text: "cuando respondas una formula matematica, tienes que devolverla en formato LaTex y rodeada de $$, por ejemplo: para \"X*3\", tiene que ser: \"$$ X*3 $$\""
-            }
-          ]
-        }
-      )
-    }
 
     for (var i = 0; i < messages.length; i++) {
       var msg = {
@@ -334,6 +314,7 @@ const createWindow = () => {
     mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
   });
 
+
   globalShortcut.register('Alt+Space', () => {
     //globalShortcut.register('CommandOrControl+Shift+X', () => {
     if (mainWindow.isVisible()) {
@@ -348,10 +329,10 @@ const createWindow = () => {
     }
   });
   // Open the DevTools.
+  //mainWindow.webContents.openDevTools()
   mainWindow.hide();
   showNotification("Lyra AI is running", "Lyra is running minimized:\nAlt + Space to show")
 
-  //mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished
